@@ -1,15 +1,18 @@
 chrome.tabs.onCreated.addListener(function(newTab) {
-    chrome.tabs.getAllInWindow(newTab.windowId, function(tabs) {
-        var duplicateTab = null;
-        tabs.forEach(function(otherTab) {
-            if (otherTab.id !== newTab.id && otherTab.url === newTab.url) {
-                duplicateTab = otherTab;
-            }
-        });
-        if (duplicateTab) {
-            chrome.tabs.update(duplicateTab.id, {"selected": true});
-            chrome.tabs.remove(newTab.id);
-        }
-    });
-});
+  const checkUrl = 'https://play.google.com/music'
 
+  if (newTab.url === checkUrl) {
+    chrome.tabs.getAllInWindow(newTab.windowId, function(tabs) {
+      tabs.forEach(function(otherTab) {
+        if (
+          otherTab.id !== newTab.id &&
+          otherTab.url.startsWith(checkUrl)
+        ) {
+          chrome.tabs.update(otherTab.id, { selected: true });
+          chrome.tabs.remove(newTab.id);
+          return;
+        }
+      });
+    });
+  };
+});
