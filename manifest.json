@@ -1,6 +1,6 @@
 {
   "name": "chrome-google-music-tab-picker",
-  "version": "1.0",
+  "version": "2",
   "manifest_version": 2,
   "description": "Selects an existing Google Play Music tab if a new one is opened.",
   "background": {
