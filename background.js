@@ -4,33 +4,37 @@ chrome.tabs.onCreated.addListener(function(newTab) {
   if (newTab.pendingUrl === checkUrl) {
     console.debug(`pending url: ${newTab.pendingUrl}`);
     chrome.tabs.query({ url: `${checkUrl}*` }, function(tabs) {
-      console.debug(`tabs found: ${tabs.length}`);
+      console.debug(`tab count: ${tabs.length}`);
+
       if (tabs.length == 1) {
-        console.debug(`tab id: ${tabs[0].id}`);
-        console.debug(`tab current window id: ${tabs[0].windowId}`);
+        console.debug(`new tab id: ${tabs[0].id} window id: ${tabs[0].windowId}`);
         chrome.windows.getAll({ populate: true }, function(windows) {
           console.debug(`window count: ${windows.length}`);
-          let i = 0;
-          let maxTabsWindowId = 0;
-          let maxTabs = 0;
-          while(windows.length > i) {
-            console.debug(`window ${windows[i].id} tab count: ${windows[i].tabs.length}`);
-            if (windows[i].tabs.length > maxTabs) {
-              maxTabs = windows[i].tabs.length;
-              maxTabsWindowId = windows[i].id;
+
+          let maxTabsWindow = windows[0];
+          windows.forEach(value => {
+            console.debug(`window ${value.id} tab count: ${value.tabs.length}`);
+            if (value.tabs.length > maxTabsWindow.tabs.length) {
+              maxTabsWindow = value;
             }
-            i++;
-          }
-          console.debug(`max tabs window id: ${maxTabsWindowId}`);
-          chrome.tabs.move(tabs[0].id, { windowId: maxTabsWindowId, index: 0 });
+          });
+
+          console.debug(`moving tab to window id: ${maxTabsWindow.id}`);
+          chrome.tabs.move(tabs[0].id, { windowId: maxTabsWindow.id, index: 0 });
+          console.debug(`pinning tab id: ${tabs[0].id}`);
           chrome.tabs.update(tabs[0].id, { pinned: true });
+          console.debug(`selecting tab id: ${tabs[0].id}`);
           chrome.tabs.update(tabs[0].id, { selected: true });
+          console.debug(`focusing window id: ${tabs[0].windowId}`);
           chrome.windows.update(tabs[0].windowId, { focused: true });
-        })
+        });
+
       } else if (tabs.length > 1) {
-        console.debug(`window id: ${tabs[0].windowId}`);
+        console.debug(`focusing window id: ${tabs[0].windowId}`);
         chrome.windows.update(tabs[0].windowId, { focused: true });
+        console.debug(`selecting tab id: ${tabs[0].id}`);
         chrome.tabs.update(tabs[0].id, { selected: true });
+        console.debug(`removing tab id: ${newTab.id}`);
         chrome.tabs.remove(newTab.id);
       }
     });
